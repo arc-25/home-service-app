@@ -1,11 +1,34 @@
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native'
 import React from 'react'
 import Colors from '../../Utils/Colors'
+import * as WebBrowser from "expo-web-browser";
+import { useOAuth } from "@clerk/clerk-expo";
+import { useWarmUpBrowser } from '../../hooks/useWarmUpBrowser';
+WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
+  useWarmUpBrowser();
+  const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
+  const onPress = React.useCallback(async () => {
+    try {
+      const { createdSessionId, signIn, signUp, setActive } =
+        await startOAuthFlow();
+ 
+      if (createdSessionId) {
+        setActive({ session: createdSessionId });
+      } else {
+        // Use signIn or signUp for next steps such as MFA
+      }
+    } catch (err) {
+      console.error("OAuth error", err);
+      
+    }
+  }, []);
+ 
+ 
   return (
   <View style={{alignItems:"center"}}>
-     <Image source={require('./../../../assets/pic2.jpg')}
+     <Image source={require('./../../../assets/pic2.png')}
      style={styles.loginImage}
       />
      <View style={styles.subComponent}>
@@ -17,7 +40,8 @@ export default function Login() {
             </Text>
 
 
-            <TouchableOpacity style={styles.button} onPress={()=>console.log("Button Click")}>  
+            <TouchableOpacity style={styles.button} 
+            onPress={onPress}>  
                 <Text style={{textAlign:'center',fontSize:17,color:Colors.PRIMARY}}>
                      Let's get started
                 </Text>
